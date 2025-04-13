@@ -1,15 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\JobController;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index']);
 
-Route::get('/posts/{id}', function (string $id) {
-    return 'Post ' . $id;
-});
-
-Route::get('/posts/{id}/comments/{commentId}', function (string $id, string $commentId) {
-    return 'Post ' . $id . ' Comment ' . $commentId;
-});
+Route::resource('jobs', JobController::class);
