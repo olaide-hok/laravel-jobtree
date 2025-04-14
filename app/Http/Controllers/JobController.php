@@ -56,8 +56,8 @@ class JobController extends Controller
             'company_website' => 'nullable|url'
         ]);
 
-        // Hardcoded user ID
-        $validatedData['user_id'] = 1;
+        // User ID
+        $validatedData['user_id'] = auth()->user()->id;
 
         // Check for image
         if ($request->hasFile('company_logo')) {
