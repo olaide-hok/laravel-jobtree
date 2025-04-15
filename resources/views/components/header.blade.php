@@ -2,7 +2,7 @@
  <header class="bg-blue-900 text-white p-4" x-data="{open: false}">
     <div class="container mx-auto flex justify-between items-center">
         <h1 class="text-3xl font-semibold">
-            <a href="{{url('/')}}">Workopia</a>
+            <a href="{{url('/')}}">JobTree</a>
         </h1>
         <nav class="hidden md:flex items-center space-x-4">
             <x-nav-link url="/" :active="request()->is('/')">Home</x-nav-link>
