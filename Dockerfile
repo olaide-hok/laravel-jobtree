@@ -1,50 +1,57 @@
-# Stage 1: Build frontend assets
-FROM node:22 as node-build
+# ---------------------------
+# Build Stage (Node + Assets)
+# ---------------------------
+FROM node:22 as build
 
+# Set workdir
 WORKDIR /app
+
+# Copy only package.json first for caching
+COPY package*.json ./
+RUN npm install
+
+# Copy everything and build assets
 COPY . .
-RUN npm install && npm run build
+RUN npm run build
 
-FROM php:8.2-fpm
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    nginx git unzip curl libzip-dev libpq-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_pgsql zip bcmath opcache
+# -------------------------------
+# Final Stage (PHP + NGINX-FPM)
+# -------------------------------
+FROM richarvey/nginx-php-fpm:3.1.6
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy Laravel app
-COPY . .
+# Copy app source
+COPY --from=build /app /var/www/html
 
-# Nginx config
-COPY ./conf/default.conf /etc/nginx/sites-enabled/default
+# Set Laravel web root
+ENV WEBROOT /var/www/html/public
 
-# Copy built frontend assets
-COPY --from=node-build /app/public /var/www/html/public
+# Image config
+ENV SKIP_COMPOSER 1
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
 
-# Set environment
+# Laravel ENV Settings
 ENV APP_ENV=production
 ENV APP_DEBUG=false
+ENV LOG_CHANNEL=stderr
 ENV PHP_ERRORS_STDERR=1
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Laravel setup
+# Laravel: Cache config, routes, views
 RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    php artisan storage:link
+ php artisan route:cache && \
+ php artisan view:cache && \
+ php artisan storage:link
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-EXPOSE 80
-CMD service nginx start && php-fpm
+# Start container
+CMD ["/start.sh"]
