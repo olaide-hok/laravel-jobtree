@@ -50,10 +50,8 @@ RUN composer install --optimize-autoloader --no-dev
 # Laravel: Cache config, routes, views
 RUN php artisan config:cache && \
  php artisan route:cache && \
- php artisan view:cache
-
-# Expose default web port
-EXPOSE 80
+ php artisan view:cache && \
+ php artisan storage:link
 
 # Start container
 CMD ["/start.sh"]
