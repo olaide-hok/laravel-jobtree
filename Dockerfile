@@ -4,15 +4,16 @@ WORKDIR /app
 COPY . .
 RUN npm install && npm run build
 
-# Stage 2: Composer dependencies
+# Stage 2: PHP build and Laravel setup
 FROM php:8.4-fpm as php-build
 WORKDIR /app
 
-# Install dependencies
+# Install PHP dependencies
 RUN apt-get update && apt-get install -y \
     git unzip curl libzip-dev libpq-dev libonig-dev libxml2-dev \
     && docker-php-ext-install pdo pdo_mysql zip bcmath opcache
 
+# Copy codebase from node build
 COPY --from=node-build /app /app
 COPY --from=node-build /app/public /app/public
 
@@ -20,7 +21,13 @@ COPY --from=node-build /app/public /app/public
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --optimize-autoloader --no-dev
 
-# Stage 3: Production container
+# Laravel: Cache config, routes, views
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan storage:link
+
+# Stage 3: Production (Nginx)
 FROM nginx:1.25-alpine
 WORKDIR /var/www/html
 
@@ -40,17 +47,10 @@ ENV SKIP_COMPOSER 1
 ENV PHP_ERRORS_STDERR 1
 ENV RUN_SCRIPTS 1
 ENV REAL_IP_HEADER 1
-
-# Laravel ENV Settings
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 ENV LOG_CHANNEL=stderr
 ENV PHP_ERRORS_STDERR=1
 
-# Laravel: Cache config, routes, views
-RUN php artisan config:cache && \
- php artisan route:cache && \
- php artisan view:cache && \
- php artisan storage:link
-
+EXPOSE 80
 CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
