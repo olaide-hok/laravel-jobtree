@@ -28,7 +28,7 @@ WORKDIR /var/www/html
 COPY --from=php-build /app /var/www/html
 
 # Add nginx config
-COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
 
 # PHP-FPM setup
 COPY --from=php-build /usr/local/etc/php-fpm.d/ /usr/local/etc/php-fpm.d/
