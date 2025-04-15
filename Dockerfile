@@ -2,6 +2,12 @@ FROM richarvey/nginx-php-fpm:3.1.6
 
 COPY . .
 
+# Install PHP dependencies
+RUN composer install --optimize-autoloader --no-dev
+
+# Install npm dependencies and build assets
+RUN npm install && npm run build
+
 # Image config
 ENV SKIP_COMPOSER 1
 ENV WEBROOT /var/www/html/public
