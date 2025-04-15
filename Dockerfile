@@ -29,6 +29,12 @@ COPY --from=build /app /var/www/html
 # Set Laravel web root
 ENV WEBROOT /var/www/html/public
 
+# Image config
+ENV SKIP_COMPOSER 1
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
+
 # Laravel ENV Settings
 ENV APP_ENV=production
 ENV APP_DEBUG=false
