@@ -163,8 +163,8 @@
     </div>
   </x-layout>
 
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet" />
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.js'></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       // Your Mapbox access token
@@ -175,7 +175,7 @@
         container: 'map', // ID of the container element
         style: 'mapbox://styles/mapbox/streets-v11', // Map style
         center: [-74.5, 40], // Default center
-        zoom: 9, // Default zoom level
+        zoom: 10, // Default zoom level
       });
 
       // Get address from Laravel view
