@@ -1,4 +1,5 @@
 {
+    "name": "jobtree",
     "private": true,
     "type": "module",
     "scripts": {
