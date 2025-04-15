@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -52,6 +53,13 @@ class JobApplied extends Mailable
      */
     public function attachments(): array
     {
-        return [];
+        $attachments =  [];
+        if ($this->application->resume_path) {
+            $attachments[] = Attachment::fromPath(storage_path('app/public/' . $this->application->resume_path))
+                ->as($this->application->resume_path)
+                ->withMime('application/pdf');
+        }
+
+        return $attachments;
     }
 }
