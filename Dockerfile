@@ -3,55 +3,53 @@
 # ---------------------------
 FROM node:22 as build
 
-# Set workdir
 WORKDIR /app
-
-# Copy only package.json first for caching
 COPY package*.json ./
 RUN npm install
-
-# Copy everything and build assets
 COPY . .
 RUN npm run build
-
 
 # -------------------------------
 # Final Stage (PHP + NGINX-FPM)
 # -------------------------------
 FROM richarvey/nginx-php-fpm:3.1.6
 
-# Set working directory
+# Copy custom NGINX config
+COPY /conf/default.conf /etc/nginx/sites-available/default.conf
+
 WORKDIR /var/www/html
 
-# Copy app source
-COPY --from=build /app /var/www/html
+# 1. Copy composer files first
+COPY composer.json composer.lock ./
 
-# Set Laravel web root
-ENV WEBROOT /var/www/html/public
+# 2. Install PHP dependencies
+RUN composer install --optimize-autoloader --no-dev --no-interaction --no-progress
 
-# Image config
-ENV SKIP_COMPOSER 1
-ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV REAL_IP_HEADER 1
+# 3. Copy application
+COPY . .
 
-# Laravel ENV Settings
-ENV APP_ENV=production
-ENV APP_DEBUG=false
-ENV LOG_CHANNEL=stderr
-ENV PHP_ERRORS_STDERR=1
+# 4. Copy ONLY built assets
+COPY --from=build /app/public/build /var/www/html/public/build
 
-# Allow composer to run as root
-ENV COMPOSER_ALLOW_SUPERUSER=1
+# 5. Set permissions
+RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Install PHP dependencies
-RUN composer install --optimize-autoloader --no-dev
+# 6. Environment
+ENV WEBROOT=/var/www/html/public \
+SKIP_COMPOSER=1 \
+PHP_ERRORS_STDERR=1 \
+RUN_SCRIPTS=1 \
+REAL_IP_HEADER=1 \
+APP_ENV=production \
+APP_DEBUG=false \
+LOG_CHANNEL=stderr \
+COMPOSER_ALLOW_SUPERUSER=1
 
-# Laravel: Cache config, routes, views
-RUN php artisan config:cache && \
- php artisan route:cache && \
- php artisan view:cache && \
- php artisan storage:link
+# 7. Cache setup
+RUN php artisan config:clear && \
+php artisan config:cache && \
+php artisan route:cache && \
+php artisan view:cache && \
+php artisan storage:link
 
-# Start container
 CMD ["/start.sh"]
