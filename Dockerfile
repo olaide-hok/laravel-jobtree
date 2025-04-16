@@ -14,16 +14,39 @@ RUN npm run build
 # -------------------------------
 FROM richarvey/nginx-php-fpm:3.1.6
 
+# Install system dependencies first
+RUN apt-get update && \
+    apt-get install -y \
+        git \
+        curl \
+        libzip-dev \
+        zip \
+        unzip \
+        libpng-dev \
+        libonig-dev \
+        libxml2-dev && \
+    docker-php-ext-install zip pdo pdo_mysql mbstring exif pcntl bcmath gd
+
+# Install proper Composer version
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
 # Copy custom NGINX config
-# COPY /conf/default.conf /etc/nginx/sites-available/default.conf
+COPY /conf/default.conf /etc/nginx/sites-available/default.conf
 
 WORKDIR /var/www/html
 
 # 1. Copy composer files first
 COPY composer.json composer.lock ./
 
+# 2. Install PHP dependencies with increased memory limit
+RUN php -d memory_limit=-1 /usr/bin/composer install \
+    --optimize-autoloader \
+    --no-dev \
+    --no-interaction \
+    --no-progress
+
 # 2. Install PHP dependencies
-RUN composer install --optimize-autoloader --no-dev
+RUN composer install --optimize-autoloader --no-dev --no-interaction --no-progress
 
 # 3. Copy application
 COPY . .
