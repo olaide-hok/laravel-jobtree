@@ -97,7 +97,8 @@ RUN mkdir -p \
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-RUN ln -s /var/www/html/storage/app/public /var/www/html/public/storage
+RUN mkdir -p /var/www/html/public && \
+    ln -s /var/www/html/storage/app/public /var/www/html/public/storage
 
 # Start
 CMD ["/start.sh"]
