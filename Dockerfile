@@ -15,7 +15,7 @@ RUN npm run build
 FROM richarvey/nginx-php-fpm:3.1.6
 
 # Copy custom NGINX config
-COPY /conf/default.conf /etc/nginx/sites-available/default.conf
+# COPY /conf/default.conf /etc/nginx/sites-available/default.conf
 
 WORKDIR /var/www/html
 
@@ -23,7 +23,7 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 
 # 2. Install PHP dependencies
-RUN composer install --optimize-autoloader --no-dev --no-interaction --no-progress
+RUN composer install --optimize-autoloader --no-dev
 
 # 3. Copy application
 COPY . .
