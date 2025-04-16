@@ -14,18 +14,33 @@ RUN npm run build
 # -------------------------------
 FROM richarvey/nginx-php-fpm:3.1.6
 
-# Install system dependencies first
-RUN apt-get update && \
-    apt-get install -y \
+# Install system dependencies (Alpine-compatible)
+RUN apk update && \
+    apk add --no-cache \
         git \
         curl \
-        libzip-dev \
-        zip \
-        unzip \
-        libpng-dev \
-        libonig-dev \
-        libxml2-dev && \
-    docker-php-ext-install zip pdo pdo_mysql mbstring exif pcntl bcmath gd
+    libzip-dev \
+    zip \
+    unzip \
+    libpng-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+      g++ \
+    make \
+    autoconf && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
+    docker-php-ext-install \
+      zip \
+        pdo \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+      bcmath \
+      gd
 
 # Install proper Composer version
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
@@ -34,6 +49,9 @@ COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 COPY /conf/default.conf /etc/nginx/sites-available/default.conf
 
 WORKDIR /var/www/html
+
+# Set permissions before composer install
+RUN mkdir -p vendor && chown -R www-data:www-data .
 
 # 1. Copy composer files first
 COPY composer.json composer.lock ./
@@ -44,9 +62,6 @@ RUN php -d memory_limit=-1 /usr/bin/composer install \
     --no-dev \
     --no-interaction \
     --no-progress
-
-# 2. Install PHP dependencies
-RUN composer install --optimize-autoloader --no-dev --no-interaction --no-progress
 
 # 3. Copy application
 COPY . .
@@ -59,20 +74,20 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 # 6. Environment
 ENV WEBROOT=/var/www/html/public \
-SKIP_COMPOSER=1 \
-PHP_ERRORS_STDERR=1 \
-RUN_SCRIPTS=1 \
-REAL_IP_HEADER=1 \
-APP_ENV=production \
-APP_DEBUG=false \
-LOG_CHANNEL=stderr \
-COMPOSER_ALLOW_SUPERUSER=1
+    SKIP_COMPOSER=1 \
+    PHP_ERRORS_STDERR=1 \
+    RUN_SCRIPTS=1 \
+    REAL_IP_HEADER=1 \
+    APP_ENV=production \
+    APP_DEBUG=false \
+    LOG_CHANNEL=stderr \
+    COMPOSER_ALLOW_SUPERUSER=1
 
 # 7. Cache setup
 RUN php artisan config:clear && \
-php artisan config:cache && \
-php artisan route:cache && \
-php artisan view:cache && \
-php artisan storage:link
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan storage:link
 
 CMD ["/start.sh"]
