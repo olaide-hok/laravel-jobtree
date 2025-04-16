@@ -89,5 +89,15 @@ APP_DEBUG=false \
 LOG_CHANNEL=stderr \
 COMPOSER_ALLOW_SUPERUSER=1
 
+RUN mkdir -p \
+    storage/app/public/logos \
+    storage/app/public/avatars \
+    storage/app/public/resumes && \
+    chown -R www-data:www-data storage
+
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+RUN ln -s /var/www/html/storage/app/public /var/www/html/public/storage
+
 # Start
 CMD ["/start.sh"]
