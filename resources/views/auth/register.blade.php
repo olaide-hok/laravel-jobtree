@@ -10,13 +10,13 @@
           placeholder="Confirm password" />
 
         <button type="submit"
-          class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded focus:outline-none">
+          class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded focus:outline-none">
           Register
         </button>
 
-        <p class="mt-4 text-gray-500">
+        <p class="mt-4 text-green-500">
           Already have an account?
-          <a class="text-blue-900" href="{{route('login')}}">Login</a>
+          <a class="text-green-900" href="{{route('login')}}">Login</a>
         </p>
       </form>
     </div>

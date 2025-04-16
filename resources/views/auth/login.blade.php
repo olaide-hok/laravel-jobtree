@@ -7,13 +7,13 @@
         <x-inputs.text id="password" name="password" type="password" placeholder="Password" />
 
         <button type="submit"
-          class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded focus:outline-none">
+          class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded focus:outline-none">
           Login
         </button>
 
         <p class="mt-4 text-gray-500">
           Don't have an account?
-          <a class="text-blue-900" href="{{route('register')}}">Register</a>
+          <a class="text-green-900" href="{{route('register')}}">Register</a>
         </p>
       </form>
     </div>

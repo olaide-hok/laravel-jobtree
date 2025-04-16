@@ -1,11 +1,11 @@
  <!-- Header -->
- <header class="bg-blue-900 text-white p-4" x-data="{open: false}">
+ <header class="bg-green-900 text-white p-4" x-data="{open: false}">
     <div class="container mx-auto flex justify-between items-center">
         <h1 class="text-3xl font-semibold">
             <a href="{{url('/')}}">JobTree</a>
         </h1>
         <nav class="hidden md:flex items-center space-x-4">
-            <x-nav-link url="/" :active="request()->is('/')">Home</x-nav-link>
+            {{-- <x-nav-link url="/" :active="request()->is('/')">Home</x-nav-link> --}}
             <x-nav-link url="/jobs" :active="request()->is('jobs')">All Jobs</x-nav-link>
             @auth
             <x-nav-link url="/bookmarks" :active="request()->is('bookmarks')">Saved Jobs</x-nav-link>
@@ -35,7 +35,7 @@
     </div>
     <!-- Mobile Menu -->
     <nav x-show="open" @click.away="open = false" id="mobile-menu"
-        class="md:hidden bg-blue-900 text-white mt-5 pb-4 space-y-2">
+        class="md:hidden bg-green-900 text-white mt-5 pb-4 space-y-2">
         <x-nav-link url="/jobs" :active="request()->is('jobs')" :mobile="true">All Jobs</x-nav-link>
         @auth
         <x-nav-link url="/bookmarks" :active="request()->is('bookmarks')" :mobile="true">Saved Jobs</x-nav-link>

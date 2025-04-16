@@ -1,5 +1,5 @@
 <x-layout>
-    <div class="bg-blue-900 h-24 px-4 mb-4 flex justify-center items-center rounded">
+    <div class="bg-green-900 h-24 px-4 mb-4 flex justify-center items-center rounded">
       <x-search />
     </div>
 
