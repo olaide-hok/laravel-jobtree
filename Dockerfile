@@ -98,6 +98,7 @@ RUN mkdir -p \
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 RUN mkdir -p /var/www/html/public && \
+    rm -rf /var/www/html/public/storage && \
     ln -s /var/www/html/storage/app/public /var/www/html/public/storage
 
 # Start
