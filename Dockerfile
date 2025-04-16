@@ -14,63 +14,73 @@ RUN npm run build
 # -------------------------------
 FROM richarvey/nginx-php-fpm:3.1.6
 
-# Install system dependencies (Alpine-compatible)
+# 1. Install system dependencies with build tools
 RUN apk update && \
-    apk add --no-cache \
+    apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
         git \
         curl \
-    libzip-dev \
-    zip \
-    unzip \
-    libpng-dev \
-    libxml2-dev \
-    oniguruma-dev \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-      g++ \
-    make \
-    autoconf && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
-    docker-php-ext-install \
-      zip \
-        pdo \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-      bcmath \
-      gd
+        libzip-dev \
+        zip \
+        unzip \
+        libpng-dev \
+        libxml2-dev \
+        oniguruma-dev \
+        freetype-dev \
+        libjpeg-turbo-dev \
+        libwebp-dev && \
+    apk add --no-cache \
+        icu-dev \
+        postgresql-dev \
+        linux-headers
 
-# Install proper Composer version
-COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+# 2. Install and configure PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
+    docker-php-ext-install -j$(nproc) \
+        zip \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        intl && \
+    pecl install redis && docker-php-ext-enable redis && \
+    apk del .build-deps
+
+# 3. Install Composer (latest version)
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# 4. Configure PHP settings
+RUN echo "memory_limit = -1" > /usr/local/etc/php/conf.d/memory-limit.ini && \
+    echo "opcache.enable_cli = 1" > /usr/local/etc/php/conf.d/opcache.ini
 
 # Copy custom NGINX config
 COPY /conf/default.conf /etc/nginx/sites-available/default.conf
 
 WORKDIR /var/www/html
 
-# Set permissions before composer install
-RUN mkdir -p vendor && chown -R www-data:www-data .
+# 5. Prepare directory structure with correct permissions
+RUN mkdir -p \
+        storage/framework/{cache,sessions,testing,views} \
+        storage/logs \
+        bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 storage bootstrap/cache
 
-# 1. Copy composer files first
+# 6. Copy only composer files first for caching
 COPY composer.json composer.lock ./
 
-# 2. Install PHP dependencies with increased memory limit
-RUN php -d memory_limit=-1 /usr/bin/composer install \
+# 7. Install dependencies with verbose output
+RUN composer install \
     --optimize-autoloader \
     --no-dev \
     --no-interaction \
-    --no-progress
-
-# 3. Copy application
-COPY . .
-
-# 4. Copy ONLY built assets
-COPY --from=build /app/public/build /var/www/html/public/build
-
-# 5. Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
+    --no-progress \
+    --no-scripts \
+    -vvv
 
 # 6. Environment
 ENV WEBROOT=/var/www/html/public \
