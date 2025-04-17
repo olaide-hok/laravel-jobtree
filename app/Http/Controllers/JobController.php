@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use App\Models\Job;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 
 class JobController extends Controller
 {
@@ -82,7 +83,16 @@ class JobController extends Controller
      */
     public function show(Job $job): View
     {
-        return View('jobs.show')->with('job', $job);
+        // Get logged in user
+        $user = Auth::user();
+
+        // Check if the logged-in user is the owner
+        $isOwner = $job->user_id === $user->id;
+
+        return View('jobs.show')->with([
+            'job' => $job,
+            'isOwner' => $isOwner,
+        ]);
     }
 
     /**
