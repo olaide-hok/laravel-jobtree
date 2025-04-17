@@ -1,4 +1,4 @@
-@props(['title' => 'Find Your Dream Job'])
+@props(['title' => 'Where Ambition Takes Root'])
 
 <!-- Hero -->
    <section

@@ -1,4 +1,4 @@
-@props(['heading' => ' Unlock Your Career Potential', 'subheading' => 'Discover the perfect job opportunity for you.'])
+@props(['heading' => ' Unlock Your Career Potential', 'subheading' => 'Discover the perfect jobs that fit your life. Not the other way around.'])
 
 <section class="bg-green-900 text-white py-6 text-center">
     <div class="container mx-auto">
